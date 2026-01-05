@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Keychains Products | Customic Store</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    .product-img {
+      height: 220px;
+      width: 100%;
+      object-fit: contain;
+      background: #fff;
+      padding: 10px;
+    }
+    .qty-box {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .qty-box button {
+      width: 35px;
+      height: 35px;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qty-box span {
+      min-width: 30px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .card { transition: transform 0.2s; }
+    .card:hover { transform: translateY(-5px); }
+  </style>
+</head>
+
+<body class="bg-light">
+
+  <div id="navbar"></div>
+
+  <div class="container mt-5 pt-4">
+    <h2 class="text-center mb-4 fw-bold">🔥 Keychains Products</h2>
+    <div class="row g-4" id="productsContainer">
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p>Loading Products from Database...</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    /* ================= CONFIG ================= */
+    const CATEGORY = "keychains"; 
+    let products = [];
+
+    /* ============ LOAD FROM DATABASE (FLASK API) ============== */
+    async function loadProducts() {
+      try {
+        // Python Backend se saare products mangwana
+        const response = await fetch('/api/products');
+        const allProducts = await response.json();
+        
+        // Sirf 'keychains' category filter karna
+        const filtered = allProducts.filter(p => p.category === CATEGORY);
+
+        // Update local list without losing current quantity selection
+        products = filtered.map(p => {
+          let existing = products.find(x => x.id === p.id);
+          return {
+            ...p,
+            qty: existing ? existing.qty : 1
+          };
+        });
+
+        renderProducts();
+      } catch (error) {
+        console.error("Database connection error:", error);
+        document.getElementById("productsContainer").innerHTML = `<p class="text-center text-danger">Server connection failed!</p>`;
+      }
+    }
+
+    /* ============ RENDER PRODUCTS ============= */
+    function renderProducts() {
+      const container = document.getElementById("productsContainer");
+      if (!container) return;
+
+      if (products.length === 0) {
+        container.innerHTML = `<div class="col-12 text-center text-muted"><p>No keychains available in database.</p></div>`;
+        return;
+      }
+
+      let html = "";
+      products.forEach(p => {
+        html += `
+          <div class="col-12 col-sm-6 col-md-4">
+            <div class="card h-100 shadow-sm border-0 position-relative">
+              <span class="badge bg-danger position-absolute top-0 start-0 m-2">
+                ${p.discount || 0}% OFF
+              </span>
+
+              <img src="${p.image || 'https://via.placeholder.com/300'}" class="card-img-top product-img" alt="${p.name}">
+
+              <div class="card-body text-center">
+                <h5 class="fw-bold">${p.name}</h5>
+                <h6 class="text-muted small mb-3">Price: <span class="text-success fw-bold fs-5">₹${p.price}</span></h6>
+
+                <div class="qty-box">
+                  <button class="btn btn-outline-secondary btn-sm rounded-circle" onclick="changeQty('${p.id}','minus')">−</button>
+                  <span id="qty${p.id}">${p.qty}</span>
+                  <button class="btn btn-outline-secondary btn-sm rounded-circle" onclick="changeQty('${p.id}','plus')">+</button>
+                </div>
+
+                <p class="fw-bold mb-3">
+                  Total: <span class="text-primary" id="total${p.id}">₹${calculateTotal(p.price, p.discount, p.qty)}</span>
+                </p>
+
+                <button class="btn btn-success w-100 fw-bold" onclick="orderWhatsApp('${p.id}')">
+                  Order on WhatsApp
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    /* ============ CALCULATIONS ============= */
+    function calculateTotal(price, discount = 0, qty) {
+      let discounted = price - (price * discount / 100);
+      return Math.round(discounted * qty);
+    }
+
+    function changeQty(id, type) {
+      let p = products.find(x => x.id == id);
+      if (!p) return;
+      if (type === "plus") p.qty++;
+      if (type === "minus" && p.qty > 1) p.qty--;
+      document.getElementById("qty" + id).innerText = p.qty;
+      document.getElementById("total" + id).innerText = "₹" + calculateTotal(p.price, p.discount, p.qty);
+    }
+
+    /* ============ WHATSAPP ORDER ============== */
+    function orderWhatsApp(id) {
+      let p = products.find(x => x.id == id);
+      if (!p) return;
+      let msg = `Order Details\nProduct: ${p.name}\nPrice: ₹${p.price}\nQuantity: ${p.qty}\nDiscount: ${p.discount || 0}%\nTotal: ₹${calculateTotal(p.price, p.discount, p.qty)}`;
+      window.open("https://wa.me/918799099135?text=" + encodeURIComponent(msg), "_blank");
+    }
+
+    /* ============ AUTO UPDATE (Every 10 seconds) ============= */
+    setInterval(loadProducts, 10000);
+
+    window.onload = () => {
+      loadProducts();
+      // Flask static folder handle karega in files ko
+      loadCommonFile("navbar", "/static/navbar.html");
+      loadCommonFile("footer", "/static/footer.html");
+    };
+
+    function loadCommonFile(id, url) {
+      fetch(url)
+        .then(r => r.text())
+        .then(d => { document.getElementById(id).innerHTML = d; })
+        .catch(e => console.log(id + " load error"));
+    }
+  </script>
+</body>
+</html>

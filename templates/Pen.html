@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pen Products | Customic Store</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .product-img { height: 220px; width: 100%; object-fit: contain; background-color: #fff; padding: 10px; }
+        .qty-box { display:flex; justify-content:center; align-items:center; gap:10px; margin:10px 0; }
+        .qty-box button { width:35px; height:35px; font-size:18px; display: flex; align-items: center; justify-content: center; }
+        .qty-box span { min-width:30px; text-align:center; font-weight:bold; }
+        .card { transition: transform 0.2s; border: none; border-radius: 15px; overflow: hidden; }
+        .card:hover { transform: translateY(-5px); }
+    </style>
+</head>
+<body class="bg-light">
+
+<div id="navbar"></div>
+
+<div class="container mt-5 pt-4">
+    <h2 class="text-center mb-4 fw-bold">🖋️ Exclusive Pen Collection</h2>
+    <div class="row g-4" id="productsContainer">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Fetching Pens from Database...</p>
+        </div>
+    </div>
+</div>
+
+<div id="footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/* ================= CONFIG ================= */
+const CATEGORY = "pen"; 
+let products = [];
+
+/* ============ LOAD FROM DATABASE (FLASK API) ============== */
+async function loadProducts(){
+    try {
+        const response = await fetch('/api/products');
+        const allProducts = await response.json();
+        
+        // Database se sirf 'pen' category filter karna
+        let filteredArr = allProducts.filter(p => p.category === CATEGORY);
+        
+        let newProducts = filteredArr.map(p => {
+            let existing = products.find(oldP => oldP.id === p.id);
+            return {
+                ...p,
+                qty: existing ? existing.qty : 1
+            };
+        });
+
+        if (JSON.stringify(newProducts) !== JSON.stringify(products)) {
+            products = newProducts;
+            renderProducts();
+        }
+    } catch (err) {
+        console.error("Database connection error:", err);
+    }
+}
+
+/* ============ RENDER PRODUCTS ============= */
+function renderProducts(){
+    const container = document.getElementById("productsContainer");
+    if(!container) return;
+    container.innerHTML = "";
+
+    if(products.length === 0){
+        container.innerHTML = `<div class="col-12 text-center text-muted py-5"><h5>No pens found in database.</h5></div>`;
+        return;
+    }
+
+    products.forEach(p => {
+        let col = document.createElement("div");
+        col.className="col-12 col-sm-6 col-md-4";
+        col.innerHTML = `
+          <div class="card h-100 shadow-sm position-relative">
+            <span class="badge bg-danger position-absolute top-0 start-0 m-2">${p.discount || 0}% OFF</span>
+            <img src="${p.image || 'https://via.placeholder.com/300'}" class="card-img-top product-img">
+            <div class="card-body text-center">
+              <h5 class="fw-bold">${p.name}</h5>
+              <h6 class="text-muted small">Price: <span class="text-success fw-bold">₹${p.price}</span></h6>
+
+              <div class="qty-box">
+                <button class="btn btn-outline-secondary btn-sm rounded-circle" onclick="changeQty('${p.id}','minus')">−</button>
+                <span id="qty${p.id}">${p.qty}</span>
+                <button class="btn btn-outline-secondary btn-sm rounded-circle" onclick="changeQty('${p.id}','plus')">+</button>
+              </div>
+
+              <p class="fw-bold">Total: <span class="text-primary" id="total${p.id}">₹${calculateTotal(p.price, p.discount, p.qty)}</span></p>
+
+              <button class="btn btn-success w-100 fw-bold shadow-sm" onclick="orderWhatsApp('${p.id}')">
+                Order on WhatsApp
+              </button>
+            </div>
+          </div>
+        `;
+        container.appendChild(col);
+    });
+}
+
+/* ============ CALCULATIONS ============= */
+function calculateTotal(price, discount = 0, qty){
+    let finalPrice = price - (price * discount / 100);
+    return Math.round(finalPrice * qty);
+}
+
+function changeQty(id, type){
+    let prod = products.find(p => p.id == id);
+    if(!prod) return;
+    if(type === 'plus') prod.qty++;
+    if(type === 'minus' && prod.qty > 1) prod.qty--;
+    
+    document.getElementById("qty" + id).innerText = prod.qty;
+    document.getElementById("total" + id).innerText = "₹" + calculateTotal(prod.price, prod.discount, prod.qty);
+}
+
+/* ============ WHATSAPP ORDER ============== */
+function orderWhatsApp(id){
+    let prod = products.find(p => p.id == id);
+    if(!prod) return;
+    let total = calculateTotal(prod.price, prod.discount, prod.qty);
+    let msg = `Order Details\nProduct: ${prod.name}\nPrice: ₹${prod.price}\nQuantity: ${prod.qty}\nDiscount: ${prod.discount}%\nTotal: ₹${total}`;
+    window.open("https://wa.me/918799099135?text=" + encodeURIComponent(msg), "_blank");
+}
+
+/* ============ INIT ============ */
+window.onload = () => {
+    loadProducts();
+    loadCommonFile("navbar", "/static/navbar.html");
+    loadCommonFile("footer", "/static/footer.html");
+    setInterval(loadProducts, 10000); // Har 10 sec me refresh
+};
+
+function loadCommonFile(id, url) {
+    fetch(url)
+        .then(r => r.text())
+        .then(d => { document.getElementById(id).innerHTML = d; })
+        .catch(err => console.log(id + " load failed"));
+}
+</script>
+</body>
+</html>

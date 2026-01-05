@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --footer-bg: #111111;
+            --accent-color: #0d6efd;
+            --text-white: #ffffff;
+            --text-light-gray: #cccccc; /* Yeh dull white hai jo aankhon ko chubhta nahi */
+        }
+
+        footer {
+            background-color: var(--footer-bg);
+            color: var(--text-white); /* Main text white */
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* Sabhi paragraphs aur small text ko white/light gray kiya */
+        footer p, footer span, footer div {
+            color: var(--text-light-gray) !important;
+        }
+
+        footer h4, footer h5, footer h6, footer strong {
+            color: var(--text-white) !important;
+        }
+
+        .footer-link {
+            transition: all 0.3s ease;
+            color: var(--text-light-gray) !important; /* Links pehle light gray */
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .footer-link:hover {
+            color: var(--accent-color) !important; /* Hover par blue */
+            transform: translateX(8px);
+        }
+
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background: #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            color: var(--text-white) !important;
+            transition: 0.4s;
+            text-decoration: none;
+            border: 1px solid #333;
+        }
+
+        .social-icon:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            transform: translateY(-5px);
+        }
+
+        .contact-info i {
+            width: 25px;
+            color: var(--accent-color);
+        }
+
+        .footer-divider {
+            border-top: 1px solid rgba(255,255,255,0.15); /* Line thodi aur visible ki */
+            margin: 40px 0 20px 0;
+        }
+
+        .btn-whatsapp-custom {
+            background-color: #25d366;
+            color: white !important;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            transition: 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            .footer-section { text-align: center; border-bottom: 1px solid #222; padding-bottom: 20px; margin-bottom: 20px; }
+            .social-container { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<footer class="pt-5 mt-5">
+    <div class="container">
+        <div class="row g-4">
+            
+            <div class="col-lg-4 col-md-12 footer-section">
+                <h3 class="fw-bold mb-3">Customic<span class="text-primary">.</span></h3>
+                <p class="small lh-lg">
+                    Premium quality handmade gifts aur premium quality products ka sabse bharosemand platform. Hum har product ko dil se banate hain.
+                </p>
+                <div class="d-flex gap-2 mt-4 social-container">
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 footer-section ps-lg-5">
+                <h6 class="text-uppercase fw-bold mb-4" style="letter-spacing: 2px;">Categories</h6>
+                <div class="d-flex flex-column">
+                    <a href="/" class="footer-link small">🔑 Keychains</a>
+                    <a href="/lamp" class="footer-link small">💡 Lamp Collection</a>
+                    <a href="/pen" class="footer-link small">🖋️ Premium Pens</a>
+                    <a href="/penpot" class="footer-link small">🏺 Creative Pen Pots</a>
+                    <a href="/wallets" class="footer-link small">👛 Leather Wallets</a>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 footer-section">
+                <h6 class="text-uppercase fw-bold mb-4" style="letter-spacing: 2px;">Reach Us</h6>
+                <div class="contact-info small">
+                    <p class="mb-2"><i class="fas fa-map-marker-alt"></i> Amarpura, Gujarat, India</p>
+                    <p class="mb-2"><i class="fas fa-phone-alt"></i> +91 87990 99135</p>
+                    <p class="mb-3"><i class="fas fa-envelope"></i> customicstore@gmail.com</p>
+                </div>
+                <a href="https://wa.me/918799099135" target="_blank" class="btn-whatsapp-custom shadow-sm">
+                    <i class="fab fa-whatsapp fs-5"></i> Order on WhatsApp
+                </a>
+            </div>
+
+        </div>
+
+        <div class="footer-divider"></div>
+
+        <div class="row align-items-center pb-4">
+            <div class="col-md-6 text-center text-md-start">
+                <p class="small mb-0">
+                    &copy; 2026 <strong>Customic Store</strong>. All Rights Reserved.
+                </p>
+            </div>
+            <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
+                <p class="small mb-0">
+                    <span>Developed By:</span> 
+                    <a href="#" class="text-primary text-decoration-none fw-bold">Mohammad Badarpuriya</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
